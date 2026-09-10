@@ -1,20 +1,85 @@
 #include "sensors.h"
+#include <Adafruit_SHT31.h>
 #include <Arduino.h>
+#include <Wire.h>
 
-SensorData readSimulatedSensors() {
+// ---------------- PIN DEFINITIONS ----------------
+#define MQ2_PIN 25
+#define VIBRATION_PIN 27
+#define WATER_PIN 33
+#define IR_PIN 12
+
+#define I2C_SDA 21
+#define I2C_SCL 22
+
+// HC-SR04
+#define TRIG_PIN 32
+#define ECHO_PIN 34
+
+Adafruit_SHT31 sht31 = Adafruit_SHT31();
+
+void sensorsInit() {
+
+  // I2C bus
+  Wire.begin(I2C_SDA, I2C_SCL);
+
+  // Digital sensor pins
+  pinMode(VIBRATION_PIN, INPUT);
+  pinMode(IR_PIN, INPUT);
+
+  // HC-SR04
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  // SHT31
+  if (!sht31.begin(0x44)) {
+    Serial.println("SHT31 initialization FAILED!");
+  } else {
+    Serial.println("SHT31 initialization SUCCESS!");
+  }
+}
+
+SensorData readSensors() {
+
   SensorData data;
 
-  data.temperature = 25.0 + random(0, 100) / 100.0;
-  data.humidity = 60.0 + random(0, 200) / 100.0;
-  data.gas = random(200, 700);
-  data.vibration = random(0, 100) / 100.0;
-  data.distance = random(50, 500) / 100.0;
-  data.irDetected = random(0, 10) > 7;
+  // -------- SHT31 --------
+  data.temperature = sht31.readTemperature();
+  data.humidity = sht31.readHumidity();
+
+  // -------- MQ-2 --------
+  data.gas = analogRead(MQ2_PIN);
+
+  // -------- SW-420 --------
+  data.vibration = digitalRead(VIBRATION_PIN);
+
+  // -------- Water Sensor --------
+  data.water = analogRead(WATER_PIN);
+
+  // -------- IR Sensor --------
+  data.irDetected = digitalRead(IR_PIN);
+
+  // -------- HC-SR04 --------
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+
+  if (duration > 0) {
+    data.distance = duration * 0.0343 / 2.0;
+  } else {
+    data.distance = 0.0;
+  }
 
   return data;
 }
 
 void printSensorData(const SensorData &data) {
+
   Serial.println("========== PURBAVAS SENSOR DATA ==========");
 
   Serial.print("Temperature : ");
@@ -29,7 +94,10 @@ void printSensorData(const SensorData &data) {
   Serial.println(data.gas);
 
   Serial.print("Vibration   : ");
-  Serial.println(data.vibration, 2);
+  Serial.println(data.vibration);
+
+  Serial.print("Water       : ");
+  Serial.println(data.water);
 
   Serial.print("Distance    : ");
   Serial.print(data.distance, 2);

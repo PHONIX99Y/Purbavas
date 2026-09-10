@@ -1,11 +1,11 @@
-#include "lora.h"
+#include "purbavas_lora.h"
 #include <Arduino.h>
 #include <LoRa.h>
 #include <SPI.h>
 
 #define LORA_SS 5
 #define LORA_RST 14
-#define LORA_DIO0 2
+#define LORA_DIO0 26
 
 void loraInit() {
 

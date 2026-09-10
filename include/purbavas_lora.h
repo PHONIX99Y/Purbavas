@@ -1,5 +1,5 @@
-#ifndef LORA_H
-#define LORA_H
+#ifndef PURBAVAS_LORA_H
+#define PURBAVAS_LORA_H
 
 #include <Arduino.h>
 

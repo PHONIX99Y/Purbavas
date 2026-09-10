@@ -6,11 +6,15 @@ struct SensorData {
   float humidity;
   int gas;
   float vibration;
-  float distance;
+  int water;
   bool irDetected;
+  float distance;
 };
 
-SensorData readSimulatedSensors();
+SensorData readSensors();
+
+void sensorsInit();
+
 void printSensorData(const SensorData &data);
 
 #endif
