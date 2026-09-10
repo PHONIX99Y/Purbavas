@@ -13,8 +13,6 @@ void setup() {
   loraInit();
   sensorsInit();
 
-  randomSeed(analogRead(A0));
-
   Serial.println();
   Serial.println("================================");
   Serial.println("      PURBAVAS SENSOR NODE      ");
