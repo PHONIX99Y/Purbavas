@@ -33,9 +33,9 @@ void sensorsInit() {
 
   // SHT31
   if (!sht31.begin(0x44)) {
-    Serial.println("SHT31 initialization FAILED!");
+    Serial.println("ERROR: SHT31 not found!");
   } else {
-    Serial.println("SHT31 initialization SUCCESS!");
+    Serial.println("SHT31: OK");
   }
 }
 
@@ -46,6 +46,12 @@ SensorData readSensors() {
   // -------- SHT31 --------
   data.temperature = sht31.readTemperature();
   data.humidity = sht31.readHumidity();
+
+  if (isnan(data.temperature) || isnan(data.humidity)) {
+    Serial.println("WARNING: Invalid SHT31 reading!");
+    data.temperature = 0.0;
+    data.humidity = 0.0;
+  }
 
   // -------- MQ-2 --------
   data.gas = analogRead(MQ2_PIN);

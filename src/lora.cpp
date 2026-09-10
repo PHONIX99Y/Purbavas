@@ -14,19 +14,29 @@ void loraInit() {
   Serial.println("Initializing SX1278 LoRa...");
 
   if (!LoRa.begin(433E6)) {
-    Serial.println("LoRa initialization FAILED!");
+    Serial.println("ERROR: LoRa initialization FAILED!");
     return;
   }
+
+  Serial.println("LoRa: OK");
 
   Serial.println("LoRa initialization SUCCESS!");
 }
 
 bool loraSend(const String &packet) {
 
+  Serial.print("Sending LoRa packet: ");
+  Serial.println(packet);
+
   LoRa.beginPacket();
   LoRa.print(packet);
 
   int result = LoRa.endPacket();
 
-  return result == 1;
+  if (result == 1) {
+    return true;
+  }
+
+  Serial.println("ERROR: LoRa transmission failed!");
+  return false;
 }
