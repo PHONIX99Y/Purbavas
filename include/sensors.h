@@ -9,6 +9,12 @@ struct SensorData {
   int water;
   bool irDetected;
   float distance;
+
+  // MPU6050
+  float accelerationX;
+  float accelerationY;
+  float accelerationZ;
+  float tiltAngle;
 };
 
 SensorData readSensors();

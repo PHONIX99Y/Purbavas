@@ -1,7 +1,9 @@
 #include "sensors.h"
+#include <Adafruit_MPU6050.h>
 #include <Adafruit_SHT31.h>
 #include <Arduino.h>
 #include <Wire.h>
+#include <math.h>
 
 // ---------------- PIN DEFINITIONS ----------------
 #define MQ2_PIN 25
@@ -18,7 +20,20 @@
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
+Adafruit_MPU6050 mpu;
+
 void sensorsInit() {
+
+  // MPU6050
+  if (!mpu.begin()) {
+    Serial.println("ERROR: MPU6050 not found!");
+  } else {
+    Serial.println("MPU6050: OK");
+
+    mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+    mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+    mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  }
 
   // I2C bus
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -80,11 +95,45 @@ SensorData readSensors() {
   } else {
     data.distance = 0.0;
   }
+  // -------- MPU6050 --------
+  sensors_event_t accel;
+  sensors_event_t gyro;
+  sensors_event_t temp;
 
+  mpu.getEvent(&accel, &gyro, &temp);
+
+  // Convert acceleration from m/s² to g
+  data.accelerationX = accel.acceleration.x / 9.80665;
+  data.accelerationY = accel.acceleration.y / 9.80665;
+  data.accelerationZ = accel.acceleration.z / 9.80665;
+
+  // Calculate tilt angle
+  float horizontalAcceleration = sqrt(data.accelerationX * data.accelerationX +
+                                      data.accelerationY * data.accelerationY);
+
+  data.tiltAngle =
+      atan2(horizontalAcceleration, data.accelerationZ) * 180.0 / PI;
+
+  // Acceleration magnitude
+  data.vibration = sqrt(data.accelerationX * data.accelerationX +
+                        data.accelerationY * data.accelerationY +
+                        data.accelerationZ * data.accelerationZ);
   return data;
 }
 
 void printSensorData(const SensorData &data) {
+
+  Serial.print("Acceleration : ");
+  Serial.print(data.accelerationX, 3);
+  Serial.print("g, ");
+  Serial.print(data.accelerationY, 3);
+  Serial.print("g, ");
+  Serial.print(data.accelerationZ, 3);
+  Serial.println("g");
+
+  Serial.print("Tilt Angle   : ");
+  Serial.print(data.tiltAngle, 2);
+  Serial.println(" deg");
 
   Serial.println("========== PURBAVAS SENSOR DATA ==========");
 

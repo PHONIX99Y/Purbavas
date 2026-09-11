@@ -1,4 +1,5 @@
 #include "purbavas_lora.h"
+
 #include <Arduino.h>
 #include <LoRa.h>
 #include <SPI.h>
@@ -19,8 +20,6 @@ void loraInit() {
   }
 
   Serial.println("LoRa: OK");
-
-  Serial.println("LoRa initialization SUCCESS!");
 }
 
 bool loraSend(const String &packet) {
@@ -38,5 +37,25 @@ bool loraSend(const String &packet) {
   }
 
   Serial.println("ERROR: LoRa transmission failed!");
+  return false;
+}
+
+bool loraSendBytes(const uint8_t *data, uint8_t length) {
+
+  Serial.print("Sending LoRa binary packet: ");
+  Serial.print(length);
+  Serial.println(" bytes");
+
+  LoRa.beginPacket();
+  LoRa.write(data, length);
+
+  int result = LoRa.endPacket();
+
+  if (result == 1) {
+    Serial.println("LoRa binary packet sent successfully.");
+    return true;
+  }
+
+  Serial.println("ERROR: LoRa binary transmission failed!");
   return false;
 }
